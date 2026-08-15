@@ -2,6 +2,8 @@
 
 > Share files & text with a 4-digit code. No accounts. No links. No email.
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/srivasthavbingi/QuickSnap)
+
 QuickSnap is a full-stack file & text sharing app that combines the best of
 [QuickShare](https://v-max.lovable.app/) (file sharing via a short code) and
 [InfoPA / SnapDrop](https://infopa.lovable.app/) (text & code sharing). Drop in
