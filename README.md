@@ -182,17 +182,45 @@ git push -u origin main
   cluster, add a database user, and whitelist `0.0.0.0/0`.
 - Copy the connection string and use it as `MONGODB_URI`.
 
-### 3. Deploy (example: Render)
+### 3. Deploy
 
-1. New → **Web Service** → connect your GitHub repo.
-2. Build command: `npm install`
-3. Start command: `npm start`
-4. Add environment variables: `MONGODB_URI`, `PORT`, `MAX_FILE_SIZE_MB`,
-   `TRANSFER_TTL_HOURS`, `NODE_ENV=production`.
-5. Deploy. Your app will be live at `https://quicksnap.onrender.com`.
+The repo ships ready-to-deploy configs for the major Node hosts:
 
-The same steps apply to Railway, Fly.io, or Koyeb — all read `npm start` and
-the env vars above.
+| File           | Use for                                  |
+| -------------- | ---------------------------------------- |
+| `Dockerfile`   | Any container host (Fly.io, Koyeb, VPS)  |
+| `render.yaml`  | One-click **Render** Blueprint           |
+| `railway.json` | **Railway** project                      |
+| `Procfile`     | Heroku / generic PaaS                    |
+
+#### Option A — Render (easiest, free tier)
+
+1. In Render, click **New → Blueprint** and select this GitHub repo.
+2. Render reads `render.yaml` automatically.
+3. Set the **`MONGODB_URI`** env var to your MongoDB Atlas connection string
+   (the rest are pre-filled).
+4. Deploy. Live at `https://quicksnap.onrender.com`.
+
+#### Option B — Railway
+
+1. **New Project → Deploy from GitHub repo**.
+2. Railway reads `railway.json` (Docker build).
+3. Add the **`MONGODB_URI`** variable in the project settings.
+4. Deploy.
+
+#### Option C — Any Docker host (Fly.io / Koyeb / VPS)
+
+```bash
+docker build -t quicksnap .
+docker run -d -p 5001:5001 \
+  -e MONGODB_URI="mongodb+srv://<user>:<pass>@<cluster>/quicksnap" \
+  -e NODE_ENV=production \
+  quicksnap
+```
+
+> In every case the only required secret is **`MONGODB_URI`** pointing at a
+> MongoDB instance (a free MongoDB Atlas cluster works). The app reads
+> `process.env.PORT` so the host can assign its own port.
 
 ---
 

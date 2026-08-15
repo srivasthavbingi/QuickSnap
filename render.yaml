@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: quicksnap
+    runtime: docker
+    plan: free
+    branch: main
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: MAX_FILE_SIZE_MB
+        value: "500"
+      - key: TRANSFER_TTL_HOURS
+        value: "24"
