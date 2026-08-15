@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuickSnap — Send files & text with a 4-digit code</title>
+  <meta name="description" content="Drop in up to 50 files (500MB total) or paste text/code and get a 4-digit code. Open files right in the app. No accounts, no links, no email. Codes expire in 24 hours." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="bg-orbs" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="grid-overlay"></div>
+  </div>
+
+  <header class="nav reveal">
+    <div class="nav-inner">
+      <a href="#" class="logo">
+        <span class="logo-mark">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/></svg>
+        </span>
+        Quick<span class="grad">Snap</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#share">Share</a>
+        <a href="#receive">Receive</a>
+        <a href="#how">How it works</a>
+        <a href="#features">Features</a>
+      </nav>
+      <a href="#share" class="btn btn-primary nav-cta">Start sharing</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-badge reveal">
+        <span class="pulse-dot"></span> No accounts · No links · No email
+      </div>
+      <h1 class="hero-title reveal">
+        Share <span class="grad">anything</span><br />with a 4-digit code
+      </h1>
+      <p class="hero-sub reveal" id="typed"></p>
+      <div class="hero-cta reveal">
+        <a href="#share" class="btn btn-primary btn-lg">
+          Start sharing <span class="arrow">→</span>
+        </a>
+        <a href="#receive" class="btn btn-ghost btn-lg">
+          <span class="key-cap">#</span> Enter a code
+        </a>
+      </div>
+      <div class="hero-stats reveal">
+        <div class="stat"><strong class="count" data-count="500">0</strong><span>MB max share</span></div>
+        <div class="stat"><strong class="count" data-count="24">0</strong><span>hour expiry</span></div>
+        <div class="stat"><strong class="count" data-count="4">0</strong><span>digit codes</span></div>
+        <div class="stat"><strong class="count" data-count="100">0</strong><span>% free</span></div>
+      </div>
+    </section>
+
+    <section id="share" class="panel-section">
+      <div class="section-head reveal">
+        <h2>Send your file or text</h2>
+        <p>Drag &amp; drop up to 50 files (500MB total), or paste text/code. Instantly get a 4-digit code.</p>
+      </div>
+
+      <div class="share-card glass reveal">
+        <div class="tabs">
+          <button class="tab active" data-tab="file">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M13 2v7h7" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+            File
+          </button>
+          <button class="tab" data-tab="text">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M7 8h10M7 12h10M7 16h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            Text / Code
+          </button>
+        </div>
+
+        <div class="tab-panel" id="panel-file">
+          <div class="dropzone" id="dropzone">
+            <input type="file" id="fileInput" hidden multiple />
+            <div class="dz-inner" id="dzInner">
+              <div class="dz-icon">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0l-4 4m4-4l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+              <h3>Drag &amp; drop your files here</h3>
+              <p>or <span class="link" id="browseLink">click to browse</span> — multiple files, up to 500MB total</p>
+            </div>
+            <div class="dz-files hidden" id="dzFiles"></div>
+          </div>
+          <div class="progress hidden" id="fileProgress">
+            <div class="progress-bar"><span></span></div>
+            <div class="progress-label" id="fileProgressLabel">Uploading…</div>
+          </div>
+          <button class="btn btn-primary btn-block" id="uploadBtn" disabled>Upload &amp; get code</button>
+        </div>
+
+        <div class="tab-panel hidden" id="panel-text">
+          <textarea id="textInput" class="code-area" spellcheck="false" placeholder="// Paste your text or code here&#10;const share = () => {&#10;  return 'with a 4-digit code';&#10;};&#10;// Any length, auto-expires in 24h"></textarea>
+          <div class="editor-toolbar">
+            <span class="char-count" id="charCount">0 characters</span>
+            <div class="toolbar-actions">
+              <button class="btn btn-ghost btn-sm" id="clearText">Clear</button>
+              <button class="btn btn-primary btn-sm" id="generateBtn">Generate code</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="result hidden" id="result">
+          <div class="result-glow"></div>
+          <div class="result-icon">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Your transfer code</h3>
+          <div class="code-display" id="codeDisplay">0000</div>
+          <p class="result-meta" id="resultMeta">Valid for 24 hours · one-time use</p>
+          <div class="countdown" id="countdown"><span id="countdownVal">24:00:00</span><small>remaining</small></div>
+          <div class="result-actions">
+            <button class="btn btn-primary" id="copyCode">Copy code</button>
+            <button class="btn btn-ghost" id="shareAgain">Share another</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="receive" class="panel-section">
+      <div class="section-head reveal">
+        <h2>Got a code?</h2>
+        <p>Enter the 4-digit code to open your files or text — right here in the app.</p>
+      </div>
+
+      <div class="receive-card glass reveal">
+        <div class="receive-input-wrap">
+          <input id="receiveInput" class="receive-input" maxlength="4" inputmode="numeric" placeholder="0000" autocomplete="off" />
+          <button class="btn btn-primary btn-lg" id="receiveBtn">Retrieve →</button>
+        </div>
+        <div class="receive-loading hidden" id="receiveLoading">
+          <div class="spinner"></div><span>Fetching your transfer…</span>
+        </div>
+        <div class="receive-result hidden" id="receiveResult"></div>
+      </div>
+    </section>
+
+    <section id="how" class="panel-section">
+      <div class="section-head reveal">
+        <h2>How it works</h2>
+        <p>Three simple steps. No account, no sign-up, no email — ever.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <div class="step-num">01</div>
+          <div class="step-icon">📤</div>
+          <h3>Upload</h3>
+          <p>Drop in up to 50 files — 500MB total — or paste text/code. No account needed.</p>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">02</div>
+          <div class="step-icon">🔢</div>
+          <h3>Get a code</h3>
+          <p>We hand you a 4-digit code, valid for 24 hours. Share it any way you like.</p>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">03</div>
+          <div class="step-icon">📥</div>
+          <h3>They retrieve</h3>
+          <p>The recipient enters the code and opens the files or reads the text right in the app.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="panel-section">
+      <div class="section-head reveal">
+        <h2>Built for speed &amp; privacy</h2>
+        <p>Everything disappears after 24 hours or one download.</p>
+      </div>
+      <div class="feature-grid">
+        <div class="feature-card glass reveal"><div class="f-icon">⚡</div><h3>Instant</h3><p>Files upload fast and codes are generated in milliseconds.</p></div>
+        <div class="feature-card glass reveal"><div class="f-icon">🔒</div><h3>Private</h3><p>No accounts, no tracking, no email. Codes are truly one-time.</p></div>
+        <div class="feature-card glass reveal"><div class="f-icon">⏳</div><h3>Self-destructing</h3><p>Transfers auto-expire after 24 hours. Nothing lingers.</p></div>
+        <div class="feature-card glass reveal"><div class="f-icon">🗂️</div><h3>Multiple files</h3><p>Send up to 50 files at once — any type, up to 500MB total.</p></div>
+        <div class="feature-card glass reveal"><div class="f-icon">👁️</div><h3>Open right here</h3><p>Images, video, audio, PDFs and code preview instantly in the app.</p></div>
+        <div class="feature-card glass reveal"><div class="f-icon">🌍</div><h3>Works anywhere</h3><p>Just a browser and a 4-digit code. No app to install.</p></div>
+      </div>
+    </section>
+
+    <section class="cta-section reveal">
+      <div class="cta-glow"></div>
+      <h2>Ready to send your first file?</h2>
+      <p>No sign-up. No downloads. Just a 4-digit code.</p>
+      <a href="#share" class="btn btn-primary btn-lg">Get your code →</a>
+    </section>
+  </main>
+
+  <footer class="footer reveal">
+    <div class="footer-inner">
+      <a href="#" class="logo">
+        <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/></svg></span>
+        Quick<span class="grad">Snap</span>
+      </a>
+      <p>Files &amp; codes disappear after 24 hours or one download.</p>
+      <div class="footer-links">
+        <a href="#share">Share</a><a href="#receive">Receive</a><a href="#how">How it works</a><a href="#features">Features</a>
+      </div>
+      <small>© 2026 QuickSnap · No accounts. No links. No email.</small>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>
