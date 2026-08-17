@@ -6,13 +6,15 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
+const mongoose = require("mongoose");
 
 const connectDB = require("./config/db");
 const transferRoutes = require("./routes/transfer");
 const { errorHandler, notFound } = require("./middleware/errorHandler");
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
+const HOST = "0.0.0.0";
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
@@ -23,8 +25,8 @@ app.use(express.urlencoded({ extended: true, limit: "8mb" }));
 app.get("/api/health", (req, res) => {
   res.json({
     status: "ok",
-    db: "quicksnap",
-    maxFileSizeMB: process.env.MAX_FILE_SIZE_MB || 250,
+    db: mongoose.connection.readyState === 1 ? "connected" : "connecting",
+    maxFileSizeMB: process.env.MAX_FILE_SIZE_MB || 500,
     ttlHours: process.env.TRANSFER_TTL_HOURS || 24,
     time: new Date().toISOString(),
   });
@@ -49,11 +51,28 @@ setInterval(() => {
   transferRoutes.purgeExpired && transferRoutes.purgeExpired().catch(() => {});
 }, 30 * 60 * 1000);
 
+async function connectWithRetry(retries = 12, delayMs = 5000) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      await connectDB();
+      return true;
+    } catch (err) {
+      console.error(`MongoDB connect attempt ${attempt}/${retries} failed: ${err.message}`);
+      if (attempt < retries) await new Promise((r) => setTimeout(r, delayMs));
+    }
+  }
+  return false;
+}
+
 async function start() {
-  await connectDB();
-  app.listen(PORT, () => {
-    console.log(`QuickSnap running at http://localhost:${PORT}`);
+  app.listen(PORT, HOST, () => {
+    console.log(`QuickSnap running at http://${HOST}:${PORT}`);
   });
+
+  const ok = await connectWithRetry();
+  if (!ok) {
+    console.error("WARNING: MongoDB still unreachable. Server is up, but DB features will not work until it connects.");
+  }
 }
 
 start().catch((err) => {
