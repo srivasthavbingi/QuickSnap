@@ -51,17 +51,17 @@ setInterval(() => {
   transferRoutes.purgeExpired && transferRoutes.purgeExpired().catch(() => {});
 }, 30 * 60 * 1000);
 
-async function connectWithRetry(retries = 12, delayMs = 5000) {
-  for (let attempt = 1; attempt <= retries; attempt++) {
+async function connectWithRetry() {
+  while (true) {
     try {
       await connectDB();
-      return true;
+      console.log("MongoDB connection established. DB features online.");
+      return;
     } catch (err) {
-      console.error(`MongoDB connect attempt ${attempt}/${retries} failed: ${err.message}`);
-      if (attempt < retries) await new Promise((r) => setTimeout(r, delayMs));
+      console.error(`MongoDB connect failed: ${err.message}. Retrying in 10s...`);
+      await new Promise((r) => setTimeout(r, 10000));
     }
   }
-  return false;
 }
 
 async function start() {
@@ -69,10 +69,7 @@ async function start() {
     console.log(`QuickSnap running at http://${HOST}:${PORT}`);
   });
 
-  const ok = await connectWithRetry();
-  if (!ok) {
-    console.error("WARNING: MongoDB still unreachable. Server is up, but DB features will not work until it connects.");
-  }
+  connectWithRetry();
 }
 
 start().catch((err) => {
