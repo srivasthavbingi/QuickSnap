@@ -8,8 +8,6 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        sync: false
       - key: MONGODB_URI
         sync: false
       - key: MAX_FILE_SIZE_MB
