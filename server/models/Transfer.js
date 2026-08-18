@@ -18,8 +18,6 @@ const transferSchema = new mongoose.Schema(
     content: { type: String, default: "" },
     size: { type: Number, default: 0 },
     expiresAt: { type: Date, required: true, index: true },
-    used: { type: Boolean, default: false },
-    retrievalId: { type: String, default: null },
   },
   { timestamps: true }
 );

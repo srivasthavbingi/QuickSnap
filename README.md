@@ -9,8 +9,8 @@ QuickSnap is a full-stack file & text sharing app that combines the best of
 [InfoPA / SnapDrop](https://infopa.lovable.app/) (text & code sharing). Drop in
 up to **50 files (500 MB total)** or paste text/code, get a **4-digit code**,
 and the recipient opens everything **right inside the app** — images, video,
-audio, PDFs and code preview inline. Codes are **one-time use** and
-**auto-expire after 24 hours**.
+audio, PDFs and code preview inline. Codes are **shareable** — anyone with the
+code can open the transfer — and **auto-expire after 24 hours**.
 
 Built with a Framer-inspired dark UI: animated gradient orbs, glassmorphism,
 scroll-reveal, animated counters, and confetti on success.
@@ -23,7 +23,7 @@ scroll-reveal, animated counters, and confetti on success.
 - **Text & code sharing** — paste snippets, logs, or long text.
 - **Inline preview** — images, video, audio, PDFs and text/code open in the app.
 - **4-digit codes** — short, easy to read over the phone or chat.
-- **One-time use** — a code is consumed the moment it is opened.
+- **Multi-user codes** — anyone with the code can open it, until it expires.
 - **Self-destructing** — transfers auto-expire after 24 hours (configurable).
 - **Zero accounts** — no sign-up, no email, no tracking.
 - **Animated UI** — glass cards, gradient orbs, smooth scroll animations.
@@ -109,9 +109,9 @@ Base URL: `/api`
 | GET    | `/health`                         | Health check (returns config + status)              |
 | POST   | `/transfer/file`                  | Upload files (`multipart/form-data`, field `files`)  |
 | POST   | `/transfer/text`                  | Share text (`{ content }`)                           |
-| GET    | `/transfer/:code`                 | Claim a code → returns metadata + `retrievalId`      |
-| GET    | `/transfer/:code/view/:index`     | Open a file inline (requires `?rid=`)                |
-| GET    | `/transfer/:code/download/:index` | Download a file (requires `?rid=`)                   |
+| GET    | `/transfer/:code`                 | Open a code → returns metadata + files              |
+| GET    | `/transfer/:code/view/:index`     | Open a file inline                                   |
+| GET    | `/transfer/:code/download/:index` | Download a file                                      |
 
 ### Example — upload two files
 
@@ -123,16 +123,17 @@ curl -F "files=@a.png" -F "files=@notes.txt" http://localhost:5001/api/transfer/
 ### Example — retrieve & preview
 
 ```bash
-# claim the code (returns retrievalId, marks code used)
+# open the code (works for any number of users until it expires)
 curl http://localhost:5001/api/transfer/1336
-# => { ..., "retrievalId": "ab12cd34...", "files": [ ... ] }
+# => { ..., "files": [ { "index": 0, "name": "a.png", ... } ] }
 
 # open the first file inline in the browser/app
-curl "http://localhost:5001/api/transfer/1336/view/0?rid=ab12cd34..."
+curl http://localhost:5001/api/transfer/1336/view/0
 ```
 
-> Codes are **one-time**: the first successful `GET /transfer/:code` consumes the
-> code. Each file view/download must include the `rid` returned at claim time.
+> Codes are **multi-user**: every `GET /transfer/:code` returns the same data,
+> so any number of people can open files and text until the code expires
+> (`TRANSFER_TTL_HOURS`).
 
 ---
 
@@ -231,8 +232,8 @@ docker run -d -p 5001:5001 \
 - Uploaded files are stored on disk in `uploads/`. On most PaaS platforms this
   folder is **ephemeral** (reset on redeploy) — for production, mount a
   persistent volume or switch storage to S3/GridFS.
-- Codes are one-time and expire after `TRANSFER_TTL_HOURS`; expired transfers
-  and their files are purged every 30 minutes.
+- Codes can be used by **multiple users** and expire after `TRANSFER_TTL_HOURS`;
+  expired transfers and their files are purged every 30 minutes.
 - `MAX_FILE_SIZE_MB` caps each file; the total of all files in one share is also
   capped at 500 MB.
 

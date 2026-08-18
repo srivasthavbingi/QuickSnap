@@ -330,8 +330,8 @@ function showResult(data) {
   $("#codeDisplay").textContent = data.code;
   const meta =
     data.type === "file"
-      ? `${data.fileCount} file${data.fileCount > 1 ? "s" : ""} · ${formatBytes(data.size)} total · one-time use · valid 24h`
-      : `${formatBytes(data.size)} of text/code · one-time use · valid 24h`;
+      ? `${data.fileCount} file${data.fileCount > 1 ? "s" : ""} · ${formatBytes(data.size)} total · shareable · valid 24h`
+      : `${formatBytes(data.size)} of text/code · shareable · valid 24h`;
   $("#resultMeta").textContent = meta;
   result.classList.remove("hidden");
   startCountdown(data.expiresAt);
@@ -419,7 +419,7 @@ function renderReceived(data) {
 
   if (data.type === "text") {
     card.innerHTML = `
-      <div class="recv-head">${formatBytes(data.size)} of text · one-time use</div>
+      <div class="recv-head">${formatBytes(data.size)} of text · valid 24h</div>
       <div class="recv-text"></div>
       <div class="recv-actions">
         <button class="btn btn-primary" id="copyText">Copy text</button>
@@ -435,14 +435,14 @@ function renderReceived(data) {
   } else {
     const head = document.createElement("div");
     head.className = "recv-head";
-    head.textContent = `${data.fileCount} file${data.fileCount > 1 ? "s" : ""} · ${formatBytes(data.size)} total · one-time use`;
+    head.textContent = `${data.fileCount} file${data.fileCount > 1 ? "s" : ""} · ${formatBytes(data.size)} total · valid 24h`;
     card.appendChild(head);
 
     const list = document.createElement("div");
     list.className = "file-list";
     data.files.forEach((f) => {
-      const viewUrl = `${API}/transfer/${data.code}/view/${f.index}?rid=${encodeURIComponent(data.retrievalId)}`;
-      const dlUrl = `${API}/transfer/${data.code}/download/${f.index}?rid=${encodeURIComponent(data.retrievalId)}`;
+      const viewUrl = `${API}/transfer/${data.code}/view/${f.index}`;
+      const dlUrl = `${API}/transfer/${data.code}/download/${f.index}`;
 
       const row = document.createElement("div");
       row.className = "file-row";

@@ -154,7 +154,6 @@ async function claimByCode(code) {
   const transfer = await Transfer.findOne({ code });
   if (!transfer) return null;
   if (transfer.expiresAt <= new Date()) return "expired";
-  if (transfer.used) return "used";
   return transfer;
 }
 
@@ -169,7 +168,6 @@ router.get("/:code", async (req, res, next) => {
     const result = await claimByCode(code);
     if (result === null) return res.status(404).json({ message: "Code not found. It may have expired." });
     if (result === "expired") return res.status(410).json({ message: "This code has expired." });
-    if (result === "used") return res.status(410).json({ message: "This code was already used." });
 
     const transfer = result;
 
@@ -180,10 +178,6 @@ router.get("/:code", async (req, res, next) => {
         await Transfer.deleteOne({ _id: transfer._id });
         return res.status(404).json({ message: "Files are no longer available on the server." });
       }
-
-      transfer.used = true;
-      transfer.retrievalId = crypto.randomBytes(16).toString("hex");
-      await transfer.save();
 
       return res.json({
         code: transfer.code,
@@ -197,12 +191,8 @@ router.get("/:code", async (req, res, next) => {
         })),
         size: transfer.size,
         expiresAt: transfer.expiresAt,
-        retrievalId: transfer.retrievalId,
       });
     }
-
-    transfer.used = true;
-    await transfer.save();
 
     res.json({
       code: transfer.code,
@@ -220,7 +210,6 @@ router.get("/:code", async (req, res, next) => {
 async function authorizeFile(req, res) {
   const code = String(req.params.code || "").trim();
   const index = Number(req.params.index);
-  const rid = String(req.query.rid || "");
 
   if (!/^\d{4}$/.test(code) || !Number.isInteger(index) || index < 0) return null;
   await purgeExpired();
@@ -236,10 +225,6 @@ async function authorizeFile(req, res) {
   }
   if (transfer.type !== "file") {
     res.status(400).json({ message: "This code is for text, not files." });
-    return null;
-  }
-  if (!transfer.retrievalId || rid !== transfer.retrievalId) {
-    res.status(403).json({ message: "Not authorized. Re-enter the code to open these files." });
     return null;
   }
 
